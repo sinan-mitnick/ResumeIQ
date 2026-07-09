@@ -16,7 +16,8 @@ const sendOTPEmail = async (email, otp) => {
     try {
 
         console.log("Sending email...");
-
+        console.log("Sending email to:", email);
+        console.log("Calling sendMail...");
         const info = await transporter.sendMail({
 
             from: `"ResumeIQ" <${process.env.EMAIL_USER}>`,
@@ -32,6 +33,7 @@ const sendOTPEmail = async (email, otp) => {
             `
 
         });
+
 
         console.log("✅ Email sent:", info.messageId);
 
