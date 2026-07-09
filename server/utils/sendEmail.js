@@ -1,54 +1,47 @@
 const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
-
     service: "gmail",
-
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
 });
 
 const sendOTPEmail = async (email, otp) => {
 
-    const info = await transporter.sendMail({
+    try {
 
-        from: `"ResumeIQ" <${process.env.EMAIL_USER}>`,
+        console.log("Sending email...");
 
-        to: email,
+        const info = await transporter.sendMail({
 
-        subject: "ResumeIQ Password Reset OTP",
+            from: `"ResumeIQ" <${process.env.EMAIL_USER}>`,
 
-        html: `
-            <div style="font-family:Arial;padding:30px">
+            to: email,
 
-                <h2>Password Reset</h2>
+            subject: "ResumeIQ Verification Code",
 
-                <p>You requested a password reset.</p>
+            html: `
+                <h2>Your ResumeIQ Verification Code</h2>
+                <h1>${otp}</h1>
+                <p>This code expires in 5 minutes.</p>
+            `
 
-                <h1 style="
-                    letter-spacing:6px;
-                    color:#2563eb;
-                    font-size:42px;
-                ">
-                    ${otp}
-                </h1>
+        });
 
-                <p>This OTP expires in <b>5 minutes</b>.</p>
+        console.log("✅ Email sent:", info.messageId);
 
-                <p>If you didn't request this,
-                simply ignore this email.</p>
+    } catch (err) {
 
-                <br>
+        console.error("❌ Email Error:", err);
 
-                <b>ResumeIQ Team</b>
+        throw err;
 
-            </div>
-        `,
-
-    });console.log("Email sent:", info.messageId);
+    }
 
 };
 
