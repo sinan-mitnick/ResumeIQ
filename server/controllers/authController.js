@@ -7,84 +7,81 @@ exports.register = async (req, res) => {
 
     try {
 
+        console.log("1. Register started");
+
         const { name, email, password } = req.body;
+
+        console.log("2. Body received");
 
         if (!name || !email || !password) {
 
             return res.status(400).json({
-
                 success: false,
-
                 message: "All fields are required"
-
             });
 
         }
 
         const existingUser = await pool.query(
-
             "SELECT * FROM users WHERE email=$1",
-
             [email]
-
         );
+
+        console.log("3. Existing user checked");
 
         if (existingUser.rows.length > 0) {
 
             return res.status(400).json({
-
                 success: false,
-
                 message: "Email already exists"
-
             });
 
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-const otp = Math.floor(
-    100000 + Math.random() * 900000
-).toString();
+        console.log("4. Password hashed");
 
-const expires = new Date(
-    Date.now() + 5 * 60 * 1000
-);
+        const otp = Math.floor(
+            100000 + Math.random() * 900000
+        ).toString();
 
-await pool.query(
-    `DELETE FROM pending_users
-     WHERE email=$1`,
-    [email]
-);
+        const expires = new Date(
+            Date.now() + 5 * 60 * 1000
+        );
 
-await pool.query(
-    `INSERT INTO pending_users
-    (
-        name,
-        email,
-        password,
-        otp,
-        otp_expires
-    )
-    VALUES($1,$2,$3,$4,$5)`,
-    [
-        name,
-        email,
-        hashedPassword,
-        otp,
-        expires
-    ]
-);
+        console.log("5. OTP generated");
 
-await sendOTPEmail(email, otp);
+        await pool.query(
+            `DELETE FROM pending_users WHERE email=$1`,
+            [email]
+        );
 
-res.status(200).json({
+        console.log("6. Old pending user deleted");
 
-    success: true,
+        await pool.query(
+            `INSERT INTO pending_users
+            (name,email,password,otp,otp_expires)
+            VALUES($1,$2,$3,$4,$5)`,
+            [
+                name,
+                email,
+                hashedPassword,
+                otp,
+                expires
+            ]
+        );
 
-    message: "Verification code sent"
+        console.log("7. Pending user inserted");
 
-});
+        await sendOTPEmail(email, otp);
+
+        console.log("8. Email sent");
+
+        return res.status(200).json({
+            success: true,
+            message: "Verification code sent"
+        });
 
     }
 
@@ -92,12 +89,9 @@ res.status(200).json({
 
         console.error(err);
 
-        res.status(500).json({
-
+        return res.status(500).json({
             success: false,
-
             message: err.message
-
         });
 
     }
@@ -115,7 +109,6 @@ exports.login = async (req, res) => {
             return res.status(400).json({
 
                 success: false,
-
                 message: "Email and password are required"
 
             });
@@ -135,7 +128,6 @@ exports.login = async (req, res) => {
             return res.status(401).json({
 
                 success: false,
-
                 message: "Invalid email or password"
 
             });
@@ -157,7 +149,6 @@ exports.login = async (req, res) => {
             return res.status(401).json({
 
                 success: false,
-
                 message: "Invalid email or password"
 
             });
@@ -169,7 +160,6 @@ exports.login = async (req, res) => {
             {
 
                 id: user.id,
-
                 email: user.email
 
             },
@@ -184,20 +174,16 @@ exports.login = async (req, res) => {
 
         );
 
-        res.status(200).json({
+        res.json({
 
             success: true,
-
-            message: "Login successful",
 
             token,
 
             user: {
 
                 id: user.id,
-
                 name: user.name,
-
                 email: user.email
 
             }
@@ -213,7 +199,6 @@ exports.login = async (req, res) => {
         res.status(500).json({
 
             success: false,
-
             message: err.message
 
         });
