@@ -19,7 +19,7 @@ const app = express();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    "https://resume-iq-dun.vercel.app",
+    "https://resume-iq-kohl.vercel.app/",
 ];
 
 app.use(
