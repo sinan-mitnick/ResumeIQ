@@ -1,43 +1,55 @@
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    host: "smtp-relay.brevo.com",
+    port: 587,
+    secure: false,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
 const sendOTPEmail = async (email, otp) => {
     try {
-        console.log("Sending email via Resend...");
 
-        const { data, error } = await resend.emails.send({
-            from: "ResumeIQ <onboarding@resend.dev>",
+        console.log("Sending email to:", email);
+
+        const info = await transporter.sendMail({
+            from: '"ResumeIQ" <resumeiq.ai.ai@gmail.com>',
             to: email,
             subject: "ResumeIQ Verification Code",
             html: `
                 <div style="font-family:Arial;padding:30px">
-                    <h2>ResumeIQ Email Verification</h2>
+                    <h2>ResumeIQ</h2>
 
                     <p>Your verification code is:</p>
 
                     <h1 style="
-                        letter-spacing:6px;
                         color:#2563eb;
                         font-size:42px;
+                        letter-spacing:6px;
                     ">
                         ${otp}
                     </h1>
 
-                    <p>This code expires in <b>5 minutes</b>.</p>
+                    <p>This OTP expires in <b>5 minutes</b>.</p>
+
+                    <p>If you didn't request this email, simply ignore it.</p>
+
+                    <br>
+
+                    <b>ResumeIQ Team</b>
                 </div>
             `,
         });
 
-        if (error) {
-            console.error(error);
-            throw new Error(error.message);
-        }
-
-        console.log("✅ Email sent:", data.id);
+        console.log("✅ Email sent:", info.messageId);
 
     } catch (err) {
+
         console.error("❌ Email Error:", err);
+
         throw err;
     }
 };
