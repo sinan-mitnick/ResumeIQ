@@ -1,11 +1,9 @@
 const nodemailer = require("nodemailer");
-await transporter.verify();
-console.log("SMTP verified");
+
 const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
     port: 587,
     secure: false,
-
     family: 4,
 
     auth: {
@@ -17,8 +15,15 @@ const transporter = nodemailer.createTransport({
     greetingTimeout: 10000,
     socketTimeout: 10000,
 });
+
 const sendOTPEmail = async (email, otp) => {
     try {
+
+        console.log("Verifying SMTP...");
+
+        await transporter.verify();
+
+        console.log("✅ SMTP Verified");
 
         console.log("Sending email to:", email);
 
@@ -55,7 +60,8 @@ const sendOTPEmail = async (email, otp) => {
 
     } catch (err) {
 
-        console.error("❌ Email Error:", err);
+        console.error("❌ Email Error:");
+        console.error(err);
 
         throw err;
     }
